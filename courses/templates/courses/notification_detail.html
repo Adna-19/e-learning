@@ -1,0 +1,129 @@
+{% extends base_template %}
+{% load courses %}
+
+{% block title %} Notifications {% endblock %}
+
+{% block content %}
+		
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/carbon-components@latest/css/carbon-components.css">
+	<script src="https://unpkg.com/carbon-components@latest/scripts/carbon-components.js"></script>
+
+  <style>
+    .message { display: none;}
+  </style>
+
+  <div class="container">
+    <p class="message bg-success text-white mt-3 p-3"></p>
+  </div>
+
+  <div data-notification class="bx--inline-notification bx--inline-notification--error ml-5 p-3" role="alert">
+    <div class="bx--inline-notification__details">
+      <span>
+        <a href="#" style="text-decoration: none;">
+          <div class="sidebar-avatar-upload">
+            <div class="sidebar-avatar-preview" style="border: 2px solid #d4d3d3; width: 53px; height: 53px;">
+                <div style="background-image: url('{{ notification.sender.profile_image.url }}');">
+                </div>
+            </div>
+          </div>
+        </a>
+      </span>
+      <div class="bx--inline-notification__text-wrapper ml-3">
+        <p class="bx--inline-notification__title">
+          {{ notification.sender.full_name }}
+        </p>
+        <p class="mt-2 bx--inline-notification__subtitle">
+          {% if notification.status == 'review' %}
+            {{ notification.content_object.comment }}
+          {% elif notification.status == 'comment' or notification.status == 'reply' %}
+            {{ notification.content_object.content }}
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  {% if notification.status == 'comment' or notification.status == 'reply' %}
+  <div class="card bg-dark ml-5" style="width: 67.5%; margin-top: -10px;">
+    <div class="card-body">
+      <div class="row">
+        <div class="col col-md-1">
+          <span>
+            <a href="#" style="text-decoration: none;">
+              <div class="sidebar-avatar-upload">
+                <div class="sidebar-avatar-preview" style="border: 2px solid #d4d3d3; width: 43px; height: 43px;">
+                    <div style="background-image: url('{{ request.user.profile_image.url }}');">
+                    </div>
+                </div>
+              </div>
+            </a>
+          </span>
+        </div>
+        <div class="col col-md-11">
+          <form action="" method="POST" id="respond-form">
+            {% csrf_token %}
+            <textarea 
+              id="respond-text" 
+              data-status="{{ notification.status }}"
+              data-object_id="{% if notification.status == 'reply' %}{{ notification.content_object.reply_to.id }}{% else %}{{ notification.content_object.id }}{% endif %}"
+              class="form-control" 
+              cols="30" rows="5" 
+              placeholder="Reply to {{ notification.sender.full_name }}..."></textarea>
+            <input type="submit" class="btn btn-block btn-success mt-2">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    document.querySelector('#respond-form').addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      let textarea = document.querySelector('#respond-text')
+      const reply_text = textarea.value;
+      const status = textarea.dataset.status;
+      const object_id = textarea.dataset.object_id;
+      const requesting_method = 'POST'
+      const url = `/blog/comment/${object_id}/reply/`
+
+      const data = new FormData();
+
+      data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+      data.append('reply', reply_text);
+      
+      if(status == "reply") {
+        data.append('reply_user_id', "{{ notification.content_object.reply_by.id }}")
+        console.log('{{ notification.content_object.reply_by.id }}')
+      }
+
+      var xhttp = new XMLHttpRequest();
+
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          const response = JSON.parse(this.responseText);
+          const message_box = document.querySelector('.message');
+
+          console.log(response)
+          // empty comment field
+          textarea.value = '';
+          
+          // display message
+          message_box.style.display = 'block';
+          message_box.textContent = 'Reply Sent Successfully...'
+
+          // hide message after 3 seconds
+          setTimeout(()=> {
+            message_box.remove();
+          },3000)
+        }
+      }
+
+      xhttp.open(requesting_method, url, true);
+      xhttp.send(data);
+    });
+  </script>
+{% endblock %}

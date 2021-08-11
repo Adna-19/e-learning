@@ -1,0 +1,177 @@
+{% extends "cms_base.html" %}
+{% load static %}
+
+{% block title %}Quiz Details{% endblock %}
+
+{% block content %}
+	<style type="text/css">
+    .float-start {
+      width: 66%;
+      float: left;
+      margin-left: 30px;
+      margin-top: 30px;
+    }
+
+    .float-end {
+      width: 30%;
+      float: right;
+      margin-top: 30px;
+    }
+
+    .modal-content {
+      width: 60rem;
+      margin-left: -45%;
+    }
+
+    @media only screen and (max-width: 768px) {
+      .float-start {
+        width: 100%;
+        margin-left: 0px;
+      }
+
+      .float-end {
+        width: 100%;
+      }
+
+      .modal-content {
+        width: 97%;
+        margin-left: 6px;
+      }
+      .answer-text {
+        margin-top: -10px;
+      }
+    }
+
+  </style>
+
+	<div class="modal fade" tabindex="-1" role="dialog" id="modal">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content"></div>
+	  </div>
+	</div>
+
+<div class="card float-start p-3">
+  <h1>{{ quiz.title }}</h1>
+  <small><strong>(Drag and Reorder Questions) 
+  </strong></small>
+  <hr>
+    <div class="row questions">
+      {% for question in quiz.questions.all %}
+      <div class="row mb-3 ml-2 border p-2" data-id="{{ question.id }}" style="box-shadow: 0 6px 4px -6px rgb(59, 59, 59); cursor: move; width: 98%;">
+          <div class="col col-md-10">
+            <h5>
+              Q<span class="order">{{ question.order|add:1 }}</span>:{{ question.text }}
+            </h5>
+            <p>
+              <div class="row row-cols-1 row-cols-md-2 g-4 content-box" style="display: none;">
+              {% for answer in question.answers.all %}
+                <div class="col">
+                  <span class="answer-text">
+                    {{ answer.text }} 
+                    {% if answer.is_correct %}
+                    <img src="{% static 'files/utility_images/green_tick.png' %}" width="13" height="13">
+                    {% endif %}
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
+            </p>
+          </div>
+          <div class="col text-right text-end pt-3" style="width: 22%;">
+            <label class="toggle-content-btn" style="margin-top: -18px; margin-bottom: 20px; cursor: pointer;">
+              <i style="font-size: 25px;" class="fas fa-caret-down"></i>
+            </label>
+            <div class="content-box" style="display: none;">
+              <button id="update_question_btn_{{ question.id }}" class="btn btn-sm btn-primary update_q_btn mb-2" data-question_id="{{ question.id }}">edit</button>
+              {% include "delete_modal.html" with object_id=question.id question=True pattern_name='delete_question' %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="float-end p-4">
+    <h2>Operations</h2>
+    <hr>
+    <button id="create_question_btn" class="btn btn-success mt-2">Add Question</button><br>
+
+    {% include "delete_modal.html" with object_id=quiz.id question=False pattern_name='delete_quiz' %}
+
+    <button id="update_quiz_btn" class="btn btn-sm mb-2 btn-secondary mt-2">Update Quiz</button>
+
+    <p style="font-size: 20px; margin-top: 10px;">
+      Attempted by
+      <span class="text-danger">5463</span>
+      <br>
+      No of Questions: {{ quiz.questions.count }}
+    </p>
+{% endblock %}
+
+{% block javascript %}
+	<script src="http://SortableJS.github.io/Sortable/Sortable.js"></script>
+  <script type="text/javascript">
+    // executes, when the dom is ready
+    $(document).ready(function() {
+      var el = document.querySelector('.questions');
+      var sortable = Sortable.create(el, {
+        delay: 300,
+        delayOnTouchOnly: true,
+        animation: 150, 
+        easing: "cubic-bezier(1, 0, 0, 1)",
+        onEnd: function (event) {
+          questions_order = {};
+          $('.questions').children().each(function () {
+            // update the order
+            $(this).find('.order').text($(this).index()+1);
+            // associate the module with its order
+            questions_order[$(this).data('id')] = $(this).index();
+          });
+          $.ajax({
+            type: 'POST',
+            url: '{% url "order_questions" %}',
+            contentType: 'application/json; charset-utf-8',
+            dataType: 'json',
+            data: JSON.stringify(questions_order)
+          });
+        }
+      });
+    });
+
+    $(function () {
+
+      $("#create_question_btn").modalForm({
+        formURL: "{% url 'create_question' quiz.id %}"
+      });
+
+      $("#update_quiz_btn").modalForm({
+        formURL: "{% url 'update_quiz' course.slug quiz.id %}"
+      });
+
+    });
+
+    document.querySelectorAll('.update_q_btn').forEach(button => {
+      $(`#${button.id}`).modalForm({
+        formURL: `/quiz/{{quiz.id}}/question/${button.dataset.question_id}/update/`
+      })
+    });
+
+    document.querySelectorAll('.toggle-content-btn').forEach(button => {
+      button.addEventListener('click', toggleQuestionContent);
+    });
+
+    function toggleQuestionContent(event) {
+      const content_body = event.target.parentElement.parentElement.parentElement;
+
+      content_body.querySelectorAll('.content-box').forEach(content_box => {
+        if(content_box.style.display === 'none') {
+          content_box.style.display = 'block';
+          event.target.className = 'fas fa-caret-up';
+        } else {
+          content_box.style.display = 'none';
+          event.target.className = 'fas fa-caret-down';
+        }
+      });
+    }
+	</script>
+{% endblock %}

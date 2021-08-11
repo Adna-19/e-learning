@@ -1,0 +1,65 @@
+<section id="course-part" class="pt-115 pb-120 gray-bg">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="section-title pb-45">
+                    <h5>Our course</h5>
+                    <h2>Featured courses </h2>
+                </div> <!-- section title -->
+            </div>
+        </div> <!-- row -->
+        <div class="row course-slied mt-30">
+            {% for course in featured_courses %}
+                <div class="col-lg-4">
+                    <div class="singel-course " style="height: 520px;">
+                        <div class="thum">
+                            <div class="image">
+                                <img src="{{ course.image.url }}" height="220px" alt="Course">
+                            </div>
+                            <div class="price">
+                                <span class="{% if course.payment_status == 'paid' %} bg-primary text-white {% endif %}">
+                                    {% if course.payment_status == 'free' %}
+                                        Free
+                                    {% else %}
+                                        paid <i class="fa fas fa-lock"></i>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="cont">
+                            <ul>
+                                <li><i class="fa fa-star"></i></li>
+                                <li><i class="fa fa-star"></i></li>
+                                <li><i class="fa fa-star"></i></li>
+                                <li><i class="fa fa-star"></i></li>
+                                <li><i class="fa fa-star"></i></li>
+                            </ul>
+                            <span>(20 Reviws)</span>
+                            <a href="{% url 'course_details' course.slug %}">
+                                <h4>{{ course.title|truncatewords:7 }}</h4>
+                            </a>
+
+                            
+
+                            <div class="course-teacher" style=" width: 85%; position: absolute; bottom: 10px;">
+                                <div class="thum">
+                                    <a href="#"><img src="{{ course.instructor.user.profile_image.url }}" alt="teacher"></a>
+                                </div>
+                                <div class="name">
+                                    <a href="#"><h6>{{ course.instructor.user.full_name }}</h6></a>
+                                </div>
+                                
+                                <div class="admin" style="position: relative; left: -20px;">
+                                    <ul>
+                                        <li><a href="#"><i class="fa fa-user"></i><span>31</span></a></li>
+                                        <li><a href="#"><i class="fa fa-heart"></i><span>10</span></a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- singel course -->
+                </div>
+            {% endfor %}
+        </div> <!-- course slied -->
+    </div> <!-- container -->
+</section>

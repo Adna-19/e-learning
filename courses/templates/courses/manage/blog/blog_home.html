@@ -1,0 +1,344 @@
+{% extends "cms_base.html" %}
+
+{% block title %} Blog CMS {% endblock %}
+
+{% block content %}
+  <style>
+    .blog-operations {
+      float: right;
+      width: 20%;
+    }
+    .blog-body {
+      float: left;
+      width: 78%;
+    }
+    h1 {
+      color: #fff;
+      padding: 10px 0;
+    }
+
+    ul.blog-options li.list-group-item {
+      border: none;
+      margin-bottom: 5px;
+      border-bottom: 1px solid rgb(194, 193, 193);
+    }
+
+    ul.blog-options li.list-group-item a {
+      font-size: 15px;
+      text-decoration: none;
+    }
+
+    .card {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+      transition: 0.3s;
+      border: none;
+    }
+    .card .card-text {
+      color: rgb(122, 122, 122);
+      font-size: 14px;
+    }
+    .card:hover {
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4);
+    }
+    .card a {
+      color: initial;
+    }
+    .card a:hover {
+      text-decoration: initial;
+    }
+    .card .text-muted i {
+      margin: 0 10px;
+    }
+    a.selected {
+      color: rgb(142, 214, 70);
+      font-weight: bold;
+    }
+    #form-container {
+      display: none;
+    }
+    .post-del-btn, .restore-btn {
+      border: none; 
+      background: none; 
+      position: absolute; 
+      right: 15px;
+      cursor: pointer;
+      font-size: 17px;
+    }
+    .post-del-btn:hover, .restore-btn:hover {
+      font-size: 21px;
+    }
+    
+  </style>
+
+  <div class="container pt-3 pl-3">
+    <div class="blog-body">
+      <!-- only display when create post button is clicked -->
+      <div class="container-sm ml-5" id="form-container">
+        <form action="" method="POST" class="mx-auto" id="post-form" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ post_form.media }}
+          {{ post_form.as_p }}
+          <p><input type="submit" style="width: 44rem;" class="btn btn-primary btn-block" value="Create"></p>
+        </form>
+      </div>
+
+      <!-- Only display when trash is performed -->
+      <div class="container-sm" id="trash-container" style="display: none;">
+        
+      </div>
+
+      <div class="container" id="posts-container">
+        <div class="card-columns">
+          {% for post in posts %}
+          <div class="card" id="post-{{ post.id }}">
+            <a href="#">
+            <img class="card-img-top" src="{{ post.image.url }}" alt="Card image cap">
+            <div class="card-body">
+              <h5 class="card-title">
+                <a href="{% url 'update_post' post.slug %}">{{ post.title }}</a>
+              </h5>
+              <p class="card-text">
+                {{ post.summary|truncatewords:20 }}
+              </p>
+              <p class="card-text">
+                <small class="text-muted">
+                  <i class="far fa-user"></i>{{ post.author.username }}
+                  <i class="fas fa-calendar-alt"></i>{{ post.date_created }}
+                </small>
+                <button class="post-del-btn" data-post_slug="{{ post.slug }}">
+                  <i style="pointer-events: none;" class="fas fa-trash-alt text-danger"></i>
+                </button>
+              </p>
+            </div>
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="blog-operations">
+      <ul class="list-group blog-options mt-4">
+        <li class="list-group-item">
+          <a href="#" class="option selected" id="post-list-btn">
+            <i style="pointer-events: none;" class="fas fa-angle-double-right"></i> 
+            &emsp14; All Posts (<span id="posts-count">{{ posts.count }}</span>)
+          </a>
+        </li>
+        <li class="list-group-item" id="create_post_btn">
+          <a href="" class="option">
+            <i style="pointer-events: none;" class="fas fa-angle-double-right"></i>
+            &emsp14; Create Post
+          </a>
+        </li>
+        <li class="list-group-item">
+          <a href="" class="option" id="trash-list-btn">
+            <i class="fas fa-angle-double-right"></i>
+            &emsp14; Trashed Posts (<span id="trash-count">{{ trash_count }}</span>)
+          </a>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    var form_container = document.querySelector('#form-container');
+    var posts_container = document.querySelector('#posts-container');
+    var trash_container = document.querySelector('#trash-container');
+
+    document.querySelector('#create_post_btn').addEventListener('click', showPostCreationForm);
+    document.querySelector('#post-form').addEventListener('submit', createNewPost);
+
+    function showPostCreationForm(event) {
+      event.preventDefault();
+      posts_container.style.display = 'none';
+      trash_container.style.display = 'none';
+      form_container.style.display = 'block';
+      changeOptionHover(event);
+    }
+
+    function changeOptionHover(event) {
+      document.querySelectorAll('a.option').forEach(option => { option.classList.remove('selected') })
+      event.target.classList.add('selected');
+    }
+
+    function createNewPost(event) {
+      event.preventDefault();
+
+      // AJAX REQUEST TO CREATE AND SAVE NEW POST
+      const requesting_method = 'POST'
+      const url = '/blog/post/create/'
+
+      // getting content value from CK-Editor
+      const content = CKEDITOR.instances['id_content'].getData();
+
+      const formData = new FormData(event.target);
+      formData.set('content', content);
+      formData.delete('image');
+      const postData = Object.fromEntries(formData);
+
+      const data = new FormData();
+      data.append('post_data', JSON.stringify(postData));
+      data.append('image', document.querySelector('#id_image').files[0])
+
+      var xhttp = new XMLHttpRequest();
+
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          location.reload();
+        }
+      }
+
+      xhttp.open(requesting_method, url, true);
+      xhttp.send(data);
+    }
+
+    // IF USER WANTS TO GO BACK FROM POST-FORM TO POST-LIST WITHOUT POST CREATIONS
+    document.querySelector('#post-list-btn').addEventListener('click', (event) => {
+      event.preventDefault();
+      if (!event.target.classList.contains('selected')) {
+        form_container.style.display  = 'none';
+        trash_container.style.display = 'none';
+        posts_container.style.display = 'block';
+        changeOptionHover(event);
+      }
+    });
+
+    // SEND BLOG POST TO TRASH
+    document.querySelectorAll('.post-del-btn').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const post_slug = event.target.dataset.post_slug;
+        const action = 'delete';
+        const url = `/blog/post/${post_slug}/${action}`;
+        const requesting_method  = 'GET'
+
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            const response = JSON.parse(this.responseText);
+
+            if (response.action == 'delete') {
+              document.querySelector(`#post-${response.post_id}`).remove();
+              // increment trash quantity
+              var trash_count = parseInt(document.querySelector('#trash-count').textContent);
+              document.querySelector('#trash-count').textContent = ++trash_count;
+              // decrement posts quantity
+              var posts_count = parseInt(document.querySelector('#posts-count').textContent);
+              document.querySelector('#posts-count').textContent = --posts_count;
+
+            }
+          }
+        }
+
+        xhttp.open(requesting_method, url, true);
+        xhttp.send();
+      });
+    });
+
+    // OPEN TRASH
+    document.querySelector('#trash-list-btn').addEventListener('click', (event) => {
+      event.preventDefault();
+
+      const url = '/blog/trash/list/';
+      const requesting_method = 'GET';
+
+      var xhttp = new XMLHttpRequest();
+      changeOptionHover(event);
+
+      xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          const response = JSON.parse(this.responseText);
+          trash_container.innerHTML = '';
+          createTrashEmptyButton();
+          if(Array.isArray(response)) {
+            response.forEach(post => {
+              posts_container.style.display = 'none';
+              form_container.style.display = 'none';
+              trash_container.style.display = 'block';
+              createNewCardAndAppendInDom(post);
+              addEventListenersToAllRestoreButtons();
+            });
+          }
+        }
+      }
+      xhttp.open(requesting_method, url, true);
+      xhttp.send();
+    });
+
+    function createTrashEmptyButton() {
+      const button = document.createElement('a');
+      button.className = 'btn btn-outline-danger btn-block mb-3';
+      button.id = "trash-empty-btn"
+      button.href = '/blog/trash/empty/';
+      button.innerHTML = `
+        <i style="pointer-events:none;" class="fas fa-trash-alt"></i> Empty Trash
+      `;
+      trash_container.appendChild(button);
+    }
+
+    function createNewCardAndAppendInDom(post) {
+      const new_post = document.createElement('div');
+      new_post.className = 'card mb-3';
+      new_post.id = `post-${post.id}`
+      new_post.innerHTML = `
+        <div class="card-body">
+          <div class='row'>
+            <div class="col col-md-4">
+              <img src="${post.image}" class="img-thumbnail">
+            </div>
+
+            <div class="col col-md-8">
+              <h3>${post.title}</h3>
+              <p>${post.summary}</p>
+              <small>
+                <i class="fas fa-calendar"></i>  ${post.date_created}
+                <button class="restore-btn" data-post_slug="${post.slug}">
+                  <i style="pointer-events: none;" class="fas fa-trash-restore text-success"></i>
+                </button>
+              </small>
+            </div>
+          </div>
+        </div>
+      `;
+      trash_container.appendChild(new_post);
+    }
+
+    function addEventListenersToAllRestoreButtons() {
+      document.querySelectorAll('.restore-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+          event.preventDefault();
+          const post_slug = event.target.dataset.post_slug;
+          const action = 'restore';
+          const url = `/blog/post/${post_slug}/${action}`;
+          const requesting_method  = 'GET'
+
+          var xhttp = new XMLHttpRequest();
+
+          xhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) {
+              const response = JSON.parse(this.responseText);
+
+              if (response.action == 'restore') {
+                document.querySelector(`#post-${response.post_id}`).remove();
+                // increment trash quantity
+                var trash_count = parseInt(document.querySelector('#trash-count').textContent);
+                document.querySelector('#trash-count').textContent = --trash_count;
+                // decrement posts quantity
+                var posts_count = parseInt(document.querySelector('#posts-count').textContent);
+                document.querySelector('#posts-count').textContent = ++posts_count;
+                location.reload();
+              }
+            }
+          }
+          xhttp.open(requesting_method, url, true);
+          xhttp.send();
+        });
+      });
+    }
+  </script>
+{% endblock %}

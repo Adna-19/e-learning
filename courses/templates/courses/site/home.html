@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load courses %}
+
+{% block title %} Home {% endblock %}
+
+{% block carousel %}
+	{% include "carousel.html" %}
+	{% include "course_categories.html" %}
+{% endblock %}
+
+{% block content %}
+	
+	{% include "about_site.html" %}
+
+	{% include "courses/site/featured_courses.html" with featured_courses=featured_courses %}
+
+	{% include "courses/site/facilities_banner.html" %}
+
+	{% include "courses/site/teachers_section.html" with top_teachers=top_four_instructors %}
+
+	{% include "courses/site/top_reviews.html" %}
+
+	{% include "courses/site/news_section.html" %}
+	
+{% endblock %}

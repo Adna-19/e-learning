@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %} Cart {% endblock %}
+
+{% block content %}
+
+	<style type="text/css">
+		.container {
+			width: 100%;
+		}
+		.items-side {
+			float: left;
+			width: 65%;
+		}
+		.price-side {
+			margin-top: 30px;
+			float: right;
+			width: 25%;
+		}
+		p.course-price { font-size: 20px; }
+
+
+		@media only screen and (max-width: 768px) {
+			.items-side { width: 100%; }
+			.price-side { width: 100%;}
+			.course-image { width: 430px; }
+			.course-title h5 { font-size: 17px; width: 270px; margin-top: 10px;}
+			p.course-price { font-size: 17px; }
+			span.instructor-name { font-size: 14px; margin-top: 20px; }
+		}
+	</style>
+
+	<div class="container">
+		<div class="items-side">
+			<h4 class="mt-5 mb-3"><span id="total_items">{{ order.get_cart_items }}</span> Course{{ order.get_cart_items|pluralize }} in Cart</h4>
+			{% for item in cart_items %}
+				<div class="row p-3 border mb-2">
+					{% with course=item.course %}
+						<div class="col">
+							<img src="{{ course.image.url }}" class="img-thumbnail course-image">
+						</div>
+						<div class="col-md-6 course-title">
+							<h5>{{ course.title }}</h5>
+							<span class="instructor-name">by {{ course.instructor.user.full_name }}</span>
+						</div>
+						<div class="col">
+							<button class="link btn btn-sm btn-danger" data-price="{{ course.price }}" data-slug="{{ course.slug }}" id="remove-btn">remove</button><br>
+							<a href="" class="text-primary">save for later</a>
+						</div>
+						<div class="col">
+							<p class="course-price">
+								<i class="fas fa-dollar-sign"></i>.{{ course.price }} 
+								<i class="fas fa-tag text-primary"></i>
+							</p>
+						</div>
+					{% endwith %}
+				</div>
+			{% empty %}
+				<p>No items in the cart yet.</p>
+			{% endfor %}
+
+			<h3 class="mt-5">Saved for later</h3>
+			<p>You haven't saved any courses for later.</p>
+			<div style="height: 100px;"></div>
+
+		</div>
+
+		<div class="price-side">
+			<p style="font-size: 25px;" class="text-secondary">Total:</p>
+			<h1><i class="fas fa-dollar-sign text-success"></i>.<span id="total_price">{{ order.get_total_cart_price }}</span></h1>
+			<a href="{% if request.user.is_authenticated %} {% url 'payment_process' order.get_total_cart_price %} {% else %} {% url 'login_next' 'show_cart' %} {% endif %}" class="btn btn-primary" style="width: 250px;">Checkout</a>
+		</div>
+
+		<div class="clearfix"></div>
+	</div>
+
+{% endblock %}
+
+{% block javascript %}
+	<script type="text/javascript">
+		document.querySelectorAll('#remove-btn').forEach((button) => button.addEventListener('click', removeItemFromCart));
+
+		function removeItemFromCart (event) {
+			const course_slug = this.dataset.slug;
+			const course_price = this.dataset.price;
+
+			if (user == "AnonymousUser") {
+				removeCourseFromCookieCart();
+			} else {
+				removeCourseFromBackendOrder();
+			}
+
+			function removeCourseFromCookieCart() {
+				delete cart[course_slug];
+				setCookie('cart', cart, 2);
+				updateCart(course_price);
+			}
+
+			function removeCourseFromBackendOrder() {
+				$.ajax({
+					url: `/course/${course_slug}/remove-from-cart/`,
+					success: function (response) {
+						updateCart(course_price);
+					},	
+					error: function (response) {
+						console.log('Something went wrong');
+					}
+				});
+			}
+
+			function updateCart(course_price) {
+				let cart_items = parseInt(document.querySelector('#cart-items').textContent);
+				cart_items--;
+				document.querySelector('#cart-items').textContent = cart_items;
+				document.querySelector('#total_items').textContent = cart_items;
+
+				let total_price = parseFloat(document.querySelector('#total_price').textContent);
+				total_price -= parseFloat(course_price);
+				document.querySelector('#total_price').textContent = total_price.toFixed(2);
+				event.target.parentElement.parentElement.remove();
+			}
+		}
+
+	</script>
+{% endblock %}
+
+

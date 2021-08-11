@@ -1,0 +1,46 @@
+{% extends base_template %}
+
+{% load courses %}
+
+{% block title %} Notifications {% endblock %}
+
+{% block content %}
+		
+	<link rel="stylesheet" type="text/css" href="https://unpkg.com/carbon-components@latest/css/carbon-components.css">
+	<script src="https://unpkg.com/carbon-components@latest/scripts/carbon-components.js"></script>
+
+	<div class="container">
+		{% for notification in notifications %}
+			<div data-notification class="bx--inline-notification bx--inline-notification--error ml-5 p-3" role="alert">
+			<div class="bx--inline-notification__details">
+				<span>
+				<a href="#" style="text-decoration: none;">
+				<div class="sidebar-avatar-upload">
+					<div class="sidebar-avatar-preview" style="border: 2px solid #d4d3d3; width: 53px; height: 53px;">
+						<div style="background-image: url('{{ notification.sender.profile_image.url }}');">
+						</div>
+					</div>
+				</div>
+				</a>
+			</span>
+				<div class="bx--inline-notification__text-wrapper ml-3">
+				<a href="{% url 'notification_details' notification.id %}">
+							<p class="bx--inline-notification__title">{{ notification.sender.full_name }}</p>
+							<p class="bx--inline-notification__subtitle">
+								{{ notification.status|format_message }}
+							</p>
+						</a>
+				</div>
+			</div>
+			<small class="text-light mt-5" style="font-size: 12px;">{{ notification.created }}</small>
+			</div>
+		{% empty %}
+			<div class="card mt-5">
+				<div class="card-body text-center text-secondary" style="font-size: 24px;">
+					You don't have any notifications yet.
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+
+{% endblock %}

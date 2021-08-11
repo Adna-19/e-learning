@@ -1,0 +1,200 @@
+{% extends "classroom_base.html" %}
+{% load static %}
+{% load courses %}
+
+{% block title %} Contents {% endblock %}
+
+{% block classroom_sidebar %}
+
+  <!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+<!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+  <style>
+    .classroom-sidebar {
+      width: 25%;
+    }
+
+    .contents-view {
+      width: 75%;
+    }
+
+    .answer-label {
+      cursor: pointer;
+      font-size: 22px;
+    }
+    .question-text {
+      font-size: 25px;
+      margin-left: 10px;
+    }
+  </style>
+
+  <ul class="list-group">
+    <p class="list-group-item" style="background: none;">
+      <img src="{% static 'files/utility_images/logo-2.png' %}" width="120px" alt="Logo">
+    </p>
+
+    <h3 class="text-white ml-3 mt-5 mb-2">Modules List</h3>
+
+    {% for module in course.modules.all %}
+      <li class="list-group-item {% if module == current_module %} border border-primary {% endif %}">
+        <a href="{% url 'classroom_module_contents' course.slug module.slug %}">
+          {{ module.title }}
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% endblock %}
+
+{% block classroom_navbar %}
+  <div class="row">
+    <div class="col col-md-8">
+      <h5>{{ current_module.title }}</h5>
+    </div>
+    <div class="col col-md-4 text-right header-btn-col">
+      {% if next_content == current_module.contents.count %}
+        {% if next_module %}
+          {% if quiz %}
+            <button class="btn btn-sm btn-outline-success" id="attempt-quiz-btn">attempt quiz</button>
+          {% else %}
+            <a 
+              href="{% url 'classroom_module_contents' course.slug next_module.slug %}" 
+              class="btn btn-sm btn-outline-success">
+              Go to Next Module
+            </a>
+          {% endif %}
+        {% else %}
+          <!-- Button trigger modal -->
+          <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Complete Course
+          </button>
+
+          <!-- Modal -->
+          <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel">Course Completion</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-3">
+                  <p class="lead p-3">
+                    <i class="fas fa-glass-cheers text-success"></i> Congractulations! {{ request.user.full_name }} <br>
+                    You have successfully Completed "{{ course.title }}" Course... <br><br>
+                  </p>
+                  <a 
+                    onclick="hideModalAndRedirectToHome()"
+                    href="/course/student/classroom/course/{{ course.slug }}/generate/certificate/?download=123" 
+                    class="btn btn-outline-success"
+                    >
+                    Collect your Certification
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        
+      {% else %}
+        <a 
+          href="{% url 'classroom_module_contents_next' course.slug current_module.slug next_content %}" 
+          class="btn btn-sm btn-outline-primary">
+          Next
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  
+{% endblock %}
+
+{% block content %}
+
+  <div class="container pl-4 pt-4">
+    <div class="module-content">
+      <p class="message"></p>
+      <h1>{{ content.content_object.title }}</h1>
+      {% include content_template %}
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    document.querySelector('#attempt-quiz-btn').addEventListener('click', (event) => {
+      document.querySelector('.module-content').style.display = 'none';
+      createAndAppendQuizForm();
+    });
+
+    function createAndAppendQuizForm() {
+      const form = document.createElement('form');
+      form.action = ''
+      form.id = 'quiz-form'
+      form.method  = 'POST'
+      form.addEventListener('submit', attemptQuiz);
+      form.setAttribute('data-quiz_id', '{{ quiz.id }}')
+
+      form.innerHTML = `
+        {% for question in quiz.questions.all %}
+          <p class="question-text">Q{{ question.order|add:1 }}: {{ question.text }}</p>
+          {% for answer in question.answers.all %}
+            <label class="answer-label mr-5">
+              <input type="radio" value="{{ answer.id }}" name="{{ question.id }}" />
+              {{ answer.text }} 
+            </label>
+          {% endfor %}
+          <br>
+        {% endfor %}
+        <br>
+        <input type="submit" value="Submit" class="btn btn-success">
+      `;
+      document.querySelector('.container').appendChild(form);
+    }
+   
+    function attemptQuiz(event) {
+
+        event.preventDefault();
+        const url = `/quiz/students/quiz/${event.target.dataset.quiz_id}/attempt/`
+        var xhttp = new XMLHttpRequest();
+
+        const formData = new FormData(event.target);
+        const formProps = Object.fromEntries(formData);
+
+        const data = new FormData();
+        data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+        data.append('question_answers', JSON.stringify(formProps));
+
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            const response = JSON.parse(this.responseText);
+
+            document.querySelector('.message').textContent = response.message;
+
+            document.querySelector('#attempt-quiz-btn').remove();
+
+            document.querySelector('.module-content').style.display = 'block';
+
+            const new_module_btn = document.createElement('a');
+            new_module_btn.href = '/course/student/classroom/course/{{ course.slug }}/module/{{ next_module.slug }}/contents'
+            new_module_btn.className = "btn btn-sm btn-outline-success"
+            new_module_btn.textContent = "Go to Next Module";
+
+            document.querySelector('.header-btn-col').appendChild(new_module_btn);
+          }
+        }
+        xhttp.open('POST', url, true);
+        xhttp.send(data);
+      }
+
+      function hideModalAndRedirectToHome(event) {
+        setTimeout(() => {
+          document.querySelector('#exampleModal').remove();
+          document.querySelectorAll('.modal-backdrop').forEach(modelBackdrop => { modelBackdrop.remove(); })
+          window.location.replace('http://127.0.0.1:8000/course/student/classroom/');
+        }, 1000)
+      }
+
+  </script>
+{% endblock %}

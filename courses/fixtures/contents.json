@@ -1,0 +1,1 @@
+[{"model": "courses.content", "pk": 26, "fields": {"module": 7, "order": 0, "content_type": 12, "object_id": 13}}, {"model": "courses.content", "pk": 27, "fields": {"module": 7, "order": 1, "content_type": 12, "object_id": 14}}, {"model": "courses.content", "pk": 28, "fields": {"module": 6, "order": 0, "content_type": 12, "object_id": 15}}]

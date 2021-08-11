@@ -1,0 +1,116 @@
+{% extends "cms_base.html" %}
+{% load static %}
+
+{% block title %}Course List{% endblock %}
+
+{% block content %}
+  <style type="text/css">
+    .course-title {
+      font-size: 19px;
+      font-weight: bold;
+    }
+    .course-description {
+      font-size: 14px;
+      color: #929292;
+    }
+  </style>
+
+  <div class="messages">
+    {% if messages %}
+      {% for message in messages %}
+        <p class="bg-success text-white p-3">{{ message }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  <div class="p-4">
+    <h3 style="font-weight: bold;">Courses List</h3>
+    <hr>
+
+    <form action="" method="GET">
+      <div class="input-group w-75 mx-auto">
+        <input type="text" name="search-input" placeholder="Search for a course..." class="form-control">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+      </div>  
+    </form>
+
+    <br>
+
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+      {% for course in courses %}
+        <div class="card mb-3" id="course-{{ course.id }}">
+          <div class="card-body">
+            <div class="row">
+              <div class="col col-md-3">
+                <img src="{{ course.image.url }}" class="img-thumbnail" width="240px">
+              </div>
+              <div class="col col-md-7">
+                <h3 class="course-title">
+                  <a href="{% url 'modules_list' course.slug %}">{{ course.title }}</a>
+                </h3>
+                <p class="course-description">
+                  {{ course.description|truncatewords:39}}
+                </p>
+
+                <button 
+                  class="btn btn-sm btn-danger course-trash-btns" 
+                  data-course_slug="{{ course.slug }}">
+                  <i class="fas fa-trash-alt" style="pointer-events: none;">
+                  </i>
+                  Move to trash
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="card">
+          <div class="card-body">
+            You haven't created any courses yet. <br>
+            <a href="{% url 'create_course' %}" class="btn btn-success mt-3">
+              Create new course 
+              <i class="fas fa-plus"></i>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+      {% include "pagination.html" with objects=courses %}
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    function removeMessage() {
+      const message = document.querySelector('.messages');
+      message.textContent = "";
+    }
+    setTimeout(removeMessage, 3000);
+
+    document.querySelectorAll('.course-trash-btns').forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        const slug = event.target.dataset.course_slug;
+        const action = 'delete';
+        const url = `/course/${slug}/trash/${action}/`;
+        const requesting_method = 'GET'
+
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function () {
+          if (this.readyState == 4 && this.status == 200) {
+            const response = JSON.parse(this.responseText);
+            document.querySelector(`#course-${response.course_id}`).remove();
+            // update trash quantity...
+            var trash_count = parseInt(document.querySelector('#trash-btn').dataset.badge);
+            document.querySelector('#trash-btn').setAttribute('data-badge', ++trash_count);
+          }
+        }
+
+        xhttp.open(requesting_method, url, true);
+        xhttp.send();
+      })
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %} {{ post.title }} {% endblock %}
+
+{% block content %}
+<section id="page-banner" class="pt-105 pb-130 bg_cover" data-overlay="8" style="background-image: url({% static 'files/banner/page-banner-4.jpg' %})">
+	<div class="container">
+		<div class="row">
+		  <div class="col-lg-12">
+	      <div class="page-banner-cont">
+          <h2>{{ post.title }}</h2>
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/course/home/">Home</a></li>
+              <li class="breadcrumb-item"><a href="{% url 'posts_list' %}">Blog</a></li>
+              <li class="breadcrumb-item active" aria-current="page">Few tips for get better</li>
+            </ol>
+          </nav>
+	      </div>  <!-- page banner cont -->
+		  </div>
+		</div> <!-- row -->
+	</div> <!-- container -->
+</section>
+
+<section id="blog-singel" class="pt-90 pb-120 gray-bg">
+  <div class="container">
+   <div class="row">
+      <div class="col-lg-8">
+          <div class="blog-details mt-30">
+              <div class="thum">
+                  <img src="{{ post.image.url }}" alt="Blog Details">
+              </div>
+              <div class="cont">
+                  <h3>{{ post.title }}</h3>
+                  <ul>
+                       <li><a href="#"><i class="fa fa-calendar"></i>{{ post.date_created }}</a></li>
+                       <li><a href="#"><i class="fa fa-user"></i>{{ post.author.full_name }}</a></li>
+                       <li><a href="#"><i class="fa fa-tags"></i>{{ post.category.title }}</a></li>
+                   </ul>
+                   {{ post.content|safe }}
+                   <ul class="share">
+                       <li class="title">Share :</li>
+                       <li><a href="#"><i class="fa fa-facebook-f"></i></a></li>
+                       <li><a href="#"><i class="fa fa-twitter"></i></a></li>
+                       <li><a href="#"><i class="fa fa-google-plus"></i></a></li>
+                       <li><a href="#"><i class="fa fa-instagram"></i></a></li>
+                       <li><a href="#"><i class="fa fa-linkedin"></i></a></li>
+                   </ul>
+                   <div class="blog-comment pt-45">
+                       <div class="title pb-15">
+                          <h3>Comment (<span id="comments-count">{{ post.comments.count }}</span>)</h3>
+                       </div>  <!-- title -->
+                       <ul id="comments-list">
+                       	{% for comment in post.comments.all %}
+                         <li id="comment-box-{{ comment.id }}">
+                           <div class="comment">
+                             <div class="comment-author">
+                                <div class="author-thum">
+                                    <img width="70" height="70" src="{{ comment.user.profile_image.url }}" alt="Reviews">
+                                </div>
+                                <div class="comment-name">
+                                  <h6>{{ comment.user.full_name }}</h6>
+                                  <span>{{ comment.date_created }}</span>
+                              </div>
+   		                       </div>
+                              <div class="comment-description pt-20">
+                                 {{ comment.content }}
+                              </div>
+                              <div class="comment-replay">
+                                  <button class="btn btn-sm btn-primary reply-btn" data-comment_id="{{ comment.id }}">Reply</button>
+                                  
+                                  {% if comment.user == request.user %}
+                                    <button class="btn btn-sm btn-danger comment-del-btn" data-comment_id="{{ comment.id}}">
+                                      <i class="fa fas fa-trash"></i>
+                                    </button>
+                                  {% endif %}
+                              </div>
+                              <div id="reply-form-{{comment.id}}">
+
+                              </div>
+                            </div>
+                              <ul class="replay" id="replies-list-{{ comment.id }}">
+                              	{% for reply in comment.replies.all %}
+                                 <li id="comment-reply-{{ reply.id }}">
+                                   <div class="comment">
+                                     <div class="comment-author">
+                                        <div class="author-thum">
+                                          <img width="60" height="60" src="{{ reply.reply_by.profile_image.url }}" alt="Reviews">
+                                        </div>
+                                        <div class="comment-name">
+                                          <h6>{{ reply.reply_by.full_name }}</h6>
+                                          <span>{{ reply.date_created }}</span>
+                                        </div>
+                                        {% if reply.reply_by == request.user %}
+                                          <button style="position: absolute; right: 10px;" class="btn btn-sm btn-danger reply-del-btn" data-comment_id="{{ comment.id }}" data-reply_id="{{ reply.id }}"><i class="fas fa fa-trash" style="pointer-events: none;"></i></button>
+                                        {% endif %}
+                                      </div>
+                                      <div class="comment-description pt-20">
+                                        <p>{{ reply.content }}</p>
+                                      </div>
+                                    </div> <!-- comment -->
+                                 </li>
+                                {% endfor %}
+                             </ul>
+                           </li>
+                           {% endfor %}
+                       </ul>
+                       <div class="title pt-45 pb-25">
+                           <h3>Leave a comment</h3>
+                       </div> <!-- title -->
+                       <div class="comment-form">
+                         <form action="" method="POST" id="blog-comment-form">
+                         	{% csrf_token %}
+                           <div class="row">
+                             <div class="col-md-12">
+                               <div class="form-singel">
+                 	              <textarea placeholder="Comment" data-post_slug="{{ post.slug }}" id="comment-box" name="content"></textarea>
+                               </div>
+                             </div>
+                             <div class="col-md-12">
+                               <div class="form-singel">
+                                 <button type="submit" class="main-btn" id="comment-btn">Submit</button>
+                               </div>
+                             </div>
+                           </div>
+                         </form>
+                       </div>
+                   </div>
+              </div>
+          </div>
+      </div>
+       <div class="col-lg-4">
+           <div class="saidbar">
+               <div class="row">
+                   <div class="col-lg-12 col-md-6">
+                       <div class="saidbar-search mt-30">
+                           <form action="" method="GET">
+                               <input type="text" placeholder="Search">
+                               <button type="button"><i class="fa fa-search"></i></button>
+                           </form>
+                       </div> <!-- saidbar search -->
+                     <div class="categories mt-30">
+                       <h4>Categories</h4>
+                       <ul>
+                       	{% for category in categories %}
+                        <li><a href="#">{{ category.title }}</a></li>
+                        {% endfor %}
+                       </ul>
+                     </div>
+                   </div> <!-- categories -->
+                   <div class="col-lg-12 col-md-6">
+                       <div class="saidbar-post mt-30">
+                           <h4>Related Posts</h4>
+                           <ul>
+                               <li>
+                                  <a href="#">
+                                    <div class="singel-post">
+                                     <div class="thum">
+                                       <img src="images/blog/blog-post/bp-1.jpg" alt="Blog">
+                                     </div>
+                                     <div class="cont">
+                                       <h6>Introduction to languages</h6>
+                                       <span>20 Dec 2018</span>
+                                     </div>
+                                   </div> <!-- singel post -->
+                                  </a>
+                               </li>
+                               <li>
+                                <a href="#">
+                                    <div class="singel-post">
+                                       <div class="thum">
+                                           <img src="images/blog/blog-post/bp-2.jpg" alt="Blog">
+                                       </div>
+                                       <div class="cont">
+                                           <h6>How to build a game with java</h6>
+                                         <span>10 Dec 2018</span>
+                                       </div>
+                                   </div> <!-- singel post -->
+                                </a>
+                             </li>
+                             <li>
+                                  <a href="#">
+                                      <div class="singel-post">
+                                         <div class="thum">
+                                             <img src="images/blog/blog-post/bp-1.jpg" alt="Blog">
+                                         </div>
+                                         <div class="cont">
+                                             <h6>Basic accounting from primary</h6>
+                                             <span>07 Dec 2018</span>
+                                         </div>
+                                     </div> <!-- singel post -->
+                                  </a>
+                             </li>
+                         </ul>
+                     </div> <!-- saidbar post -->
+                 </div>
+             </div> <!-- row -->
+         </div> <!-- saidbar -->
+       </div>
+   </div> <!-- row -->
+  </div> <!-- container -->
+</section>
+
+{% endblock %}
+
+{% block javascript %}
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.9.1/axios.js'></script>
+	<script type="text/javascript">
+		document.querySelector('#blog-comment-form').addEventListener('submit', AddNewComment);
+
+		function AddNewComment(event) {
+			event.preventDefault();
+
+			const post_slug = document.querySelector('#comment-box').dataset.post_slug;
+			const content = document.querySelector('#comment-box').value;
+		  
+			let url = `/blog/${post_slug}/add-comment/`
+
+      let data = new FormData();
+
+      data.append('content', content);
+      data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+      if (content){
+        axios.post(url, data)
+        .then(response => {
+          const response_data  = response['data'];
+          document.querySelector('#comment-box').value = '';    
+          let data = response;
+            UpdateCommentsQuantity();
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <div class="comment">
+               <div class="comment-author">
+                <div class="author-thum">
+                  <img width="70" height="70" src="${response_data.profile_image}" alt="Reviews">
+                </div>
+                <div class="comment-name">
+                  <h6>${ response_data.username }</h6>
+                  <span>${ response_data.date_created }</span>
+                </div>
+                 </div>
+                <div class="comment-description pt-20">
+                   ${ response_data.comment }
+                </div>
+                <div class="comment-replay">
+                    <button class="btn btn-sm btn-primary reply-btn">Reply</button>
+                </div>
+                <div id="reply-form-${response_data.id}"></div>
+              </div>
+            `;
+          document.querySelector('#comments-list').appendChild(li);
+        })
+        .catch(error => {
+          console.log(error);
+        })
+      }
+		}
+
+		function UpdateCommentsQuantity() {
+			let total_comments = parseInt(document.querySelector('#comments-count'));
+			total_comments++;
+			document.querySelector('#comments-count').textContent = total_comments;
+		}
+
+    document.querySelectorAll(".reply-btn").forEach(button => {
+      button.addEventListener('click', addReplyToComment);
+    })
+
+    // ADDING REPLY TO COMMENT FUNCTIONALITY
+    function addReplyToComment(event){
+      event.preventDefault();
+      let comment_id = event.target.dataset.comment_id;
+      event.target.parentElement.nextSibling.nextSibling.innerHTML = `
+        <form action="" method="post" id="reply-form">
+          {% csrf_token %}
+          <div class="input-group">
+            <textarea rows="1" cols="35" id="reply-box" class="form-control p-2" placeholder="Reply to Comment..." data-comment_id="${comment_id}"></textarea>
+            <input type="submit" value="post" class="btn btn-sm btn-success"/> 
+          </div>
+        </form>
+      `;
+
+      document.querySelector('#reply-form').addEventListener('submit', sendReplyToBackend);
+    }
+
+    function sendReplyToBackend(event) {
+      event.preventDefault();
+      let comment_id = document.querySelector('#reply-box').dataset.comment_id;
+      let url = `/blog/comment/${comment_id}/reply/`;
+      let reply = document.querySelector('#reply-box').value;
+
+      let data = new FormData();
+
+      data.append('reply', reply);
+      data.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+      if (reply) {
+        axios.post(url, data)
+        .then(response => {
+          const response_data = response['data'];
+          const new_comment_li = document.createElement('li');
+
+          document.querySelector('#reply-form').remove();
+
+          new_comment_li.innerHTML = `
+             <div class="comment">
+               <div class="comment-author">
+                  <div class="author-thum">
+                    <img width="60" height="60" src="${response_data.profile_image}" alt="Reviews">
+                  </div>
+                  <div class="comment-name">
+                    <h6>${response_data.full_name}</h6>
+                    <span>${response_data.date_created}</span>
+                  </div>
+                  <button style="position: absolute; right: 10px;" class="btn btn-sm btn-danger reply-del-btn" data-comment_id="${comment_id}" data-reply_id="${ response_data.reply_id }"><i class="fas fa fa-trash" style="pointer-events: none;"></i>
+                  </button>
+                </div>
+                <div class="comment-description pt-20">
+                  <p>${response_data.content}</p>
+                </div>
+            </div>
+          `;
+          document.querySelector(`#replies-list-${comment_id}`).appendChild(new_comment_li);
+        })
+        .catch(error => {
+          console.log(error);
+        })
+      }
+    };
+
+    // DELETE A COMMENT AND ITS ASSOCIATED REPLIES
+    document.querySelectorAll('.comment-del-btn').forEach(button => {
+      button.addEventListener('click', deleteCommentFromDBAndUI);
+    });
+
+    function deleteCommentFromDBAndUI(event) {
+      event.preventDefault();
+      const comment_id = event.target.dataset.comment_id;
+      const url = `/blog/comment/${comment_id}/delete/`;
+
+      axios.get(url)
+      .then(response => {
+        console.log(response['data']['message']);
+        document.querySelector(`#comment-box-${comment_id}`).remove();
+      })
+      .catch(error => {
+        console.log(error)
+      })
+    }
+
+    // DELETE A REPLY FUNCTIONALITY
+    document.querySelectorAll('.reply-del-btn').forEach(button => {
+      button.addEventListener('click', deleteCommentReply);
+    });
+
+    function deleteCommentReply(event){
+      event.preventDefault();
+
+      const comment_id = event.target.dataset.comment_id;
+      const reply_id = event.target.dataset.reply_id;
+      const url = `/blog/comment/${comment_id}/reply/${reply_id}/delete/`;
+
+      axios.get(url)
+      .then(response => {
+        document.querySelector(`#comment-reply-${reply_id}`).remove();
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    }
+
+	</script>
+{% endblock %}

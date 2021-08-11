@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load static %}
+{% load courses %}
+
+{% block title %} Courses {% endblock %}
+
+{% block content %}
+
+<style>
+    ul.stars li span {
+        color: rgb(185, 189, 189);
+    }
+
+    ul.stars li span.checked {
+        color: rgb(238, 218, 39);
+    }
+</style>
+	
+<section id="page-banner" class="pt-105 pb-110 bg_cover" data-overlay="8" style="background-image: url("{% static 'files/banner/page-banner-2.jpg' %})">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-banner-cont">
+                    <h2>{% if is_paid %} Paid {% else %} Free {% endif %} Courses</h2>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">Home</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Courses</li>
+                        </ol>
+                    </nav>
+                </div>  <!-- page banner cont -->
+            </div>
+        </div> <!-- row -->
+    </div> <!-- container -->
+</section>
+
+
+ <section id="courses-part" class="pt-120 pb-120 gray-bg">
+  <div class="container">
+      <div class="row">
+          <div class="col-lg-12">
+              <div class="courses-top-search">
+                  <ul class="nav float-left" id="myTab" role="tablist">
+                      <li class="nav-item">
+                          <a class="active" id="courses-grid-tab" data-toggle="tab" href="#courses-grid" role="tab" aria-controls="courses-grid" aria-selected="true"><i class="fa fa-th-large"></i></a>
+                      </li>
+                      <li class="nav-item">
+                          <a id="courses-list-tab" data-toggle="tab" href="#courses-list" role="tab" aria-controls="courses-list" aria-selected="false"><i class="fa fa-th-list"></i></a>
+                      </li>
+                      <li class="nav-item">Showning 4 0f 24 Results</li>
+                  </ul> <!-- nav -->
+                  
+                  <div class="courses-search float-right">
+                      <form action="#">
+                          <input type="text" placeholder="Search">
+                          <button type="button"><i class="fa fa-search"></i></button>
+                      </form>
+                  </div> <!-- courses search -->
+              </div> <!-- courses top search -->
+          </div>
+      </div> <!-- row -->
+
+      <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="courses-grid" role="tabpanel" aria-labelledby="courses-grid-tab">
+              <div class="row">
+              	{% for course in courses %}
+                  <div class="col-lg-4 col-md-6">
+                      <div class="singel-course mt-30" style="height: 520px;">
+                          <div class="thum">
+                              <div class="image">
+                                  <img src="{{ course.image.url }}" alt="Course" height="250px">
+                              </div>
+                              <div class="price">
+                                  <span>{% if course.payment_status == 'free'%} Free {% else %} Paid {% endif %}</span>
+                              </div>
+                          </div>
+                          <div class="cont">
+                              <ul class="stars">
+                                    {% for r in 5|times %}
+                                        <li>
+                                            <span 
+                                                class="fa fa-star
+                                                {% if r <= course.get_current_rating %}
+                                                    checked
+                                                {% endif %}"
+                                            >
+                                            </span>
+                                        </li>
+                                    {% endfor %}
+                              </ul>
+                              <span>({{ course.student_reviews.count }} Reviews)</span>
+                              <a href="{% url 'course_details' course.slug %}"><h4>{{ course.title }}</h4></a>
+                              <div class="course-teacher" style="position: absolute; bottom:10px; width: 85%;">
+                                  <div class="thum">
+                                      <a href="#"><img src="{{ course.instructor.user.profile_image.url }}" alt="teacher"></a>
+                                  </div>
+                                  <div class="name">
+                                      <a href="#"><h6>{{ course.instructor.user.full_name }}</h6></a>
+                                  </div>
+                                  <div class="admin" style="position:relative; left: -30px;">
+                                      <ul>
+                                          <li><a href="#"><i class="fa fa-user"></i><span>31</span></a></li>
+                                          <li><a href="#"><i class="fa fa-heart"></i><span>10</span></a></li>
+                                      </ul>
+                                  </div>
+                              </div>
+                          </div>
+                      </div> <!-- singel course -->
+                  </div>
+                  {% endfor %}
+              </div> <!-- row -->
+          </div>
+      <div class="row">
+          <div class="col-lg-12">
+              <nav class="courses-pagination mt-50">
+                  <ul class="pagination justify-content-center">
+                      <li class="page-item">
+                          <a href="#" aria-label="Previous">
+                              <i class="fa fa-angle-left"></i>
+                          </a>
+                      </li>
+                      <li class="page-item"><a class="active" href="#">1</a></li>
+                      <li class="page-item"><a href="#">2</a></li>
+                      <li class="page-item"><a href="#">3</a></li>
+                      <li class="page-item">
+                          <a href="#" aria-label="Next">
+                              <i class="fa fa-angle-right"></i>
+                          </a>
+                      </li>
+                  </ul>
+              </nav>  <!-- courses pagination -->
+          </div>
+      </div>  <!-- row -->
+  </div> <!-- container -->
+</section>
+
+{% endblock %}

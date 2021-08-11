@@ -1,0 +1,121 @@
+{% extends "cms_base.html" %}
+
+{% block title %} CMS Home {% endblock %}
+
+{% block content %}
+	<style type="text/css">
+		#greeting-message {
+			font-family: 'Crete Round', serif;
+		}
+		.card {
+			width: 98%;
+			margin: 20px auto;
+		}
+
+		.instructor-avatar-upload .instructor-avatar-preview {
+	    width: 83px;
+	    height: 83px;
+	    margin: auto;
+	    position: relative;
+	    border-radius: 100%;
+	    box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.1);
+	  }
+	  .instructor-avatar-upload .instructor-avatar-preview > div {
+	    width: 100%;
+	    height: 100%;
+	    border-radius: 100%;
+	    background-size: cover;
+	    background-repeat: no-repeat;
+	    background-position: center;
+	  }
+	  .course-title {
+	  	font-size: 17px;
+	  	font-weight: bold;
+	  	margin-left: 10px;
+	  }
+	  .course-description {
+	  	font-size: 13px;
+	  	color: #929292;
+	  	margin-left: 10px;
+	  }
+	</style>
+
+	
+	<div class="card">
+		<div class="card-body p-3">
+			<div style="float: left;width: 80%;">
+				<h4 id="greeting-message">{{ greeting_message }}, {{ request.user.username }}!</h4>
+				<p>{{ today }}</p>
+			</div>
+
+			<div style="float: right;width: 20%;">
+				<img src="http://openweathermap.org/img/w/{{ weather_details.icon }}.png" alt="Image">
+				<p>
+          <span class="title">{{ weather_details.city }}</span>
+          <br>
+          <span class="subtitle">{{ weather_details.temperature }}° F</span>
+          <br> {{ weather_details.description }}
+      	</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	<div style="width: 100%;">
+		<div style="float:left; width: 70%;">
+			<h4 class="ml-3" style="font-weight: bold;">Recent Courses</h4>
+				{% for course in latest_courses %}
+					<div class="card">
+						<div class="card-body">
+							<div class="row">
+								<div class="col col-md-3">
+									<img src="{{ course.image.url }}" class="img-thumbnail" width="200px">
+								</div>
+								<div class="col col-md-8">
+									<h3 class="course-title"><a href="{% url 'modules_list' course.slug %}">{{ course.title }}</a></h3>
+									<p class="course-description">{{ course.description|truncatewords:22}}</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% empty %}
+					<div class="card">
+						<div class="card-body">
+							You haven't created any courses yet. <br>
+							<a href="{% url 'create_course' %}">
+								Create new course 
+								<i class="fas fa-plus"></i>
+							</a>
+						</div>
+					</div>
+				{% endfor %}
+		</div>
+		<div style="float:left; width: 29%; margin-top: 27px;">
+			<div class="card">
+					<div class="card-body">
+						<a href="#" style="text-decoration: none;">
+		          <div class="instructor-avatar-upload mt-3">
+		            <div class="instructor-avatar-preview" style="border: 2px solid #d4d3d3;">
+		                <div style="background-image: url('{{ request.user.profile_image.url }}');">
+		                </div>
+		            </div>
+		            <p style="font-size: 16px;" class="mt-1 text-center username">
+		            	{{ request.user.full_name }}
+		            </p>
+		          </div>
+		        </a>
+						{% with request.user.instructor_profile as instructor %}
+							<p class="text-center">
+								Courses: {{ instructor.courses.count }}
+							</p>
+							<p class="text-center">
+								Students: {{ instructor.enrolled_students }}
+							</p>
+						{% endwith %}
+					</div>
+				</div>
+		</div>
+	</div>
+
+{% endblock %}

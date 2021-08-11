@@ -1,0 +1,82 @@
+{% extends "classroom_base.html" %}
+{% load static %}
+{% load courses %}
+
+{% block title %} Course {% endblock %}
+
+{% block classroom_navbar %}
+  <div class="row">
+    <div class="col col-md-8">
+      <h5>{{ course.title }}</h5>
+    </div>
+    <div class="col col-md-4 text-right header-btn-col">
+      {% if course|not_completed_and_continued:request.user.student_profile %}
+        <a href="{{ course|continue_url:request.user.student_profile }}" class="btn btn-success">
+          Continue Lesson
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block content %}
+
+  <style>
+    .module-card {
+			width: 94%;
+			box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+		}
+
+		.module-card h2.module-title a {
+			color: rgb(79, 75, 75);
+			text-decoration: none;
+			font-size: 26px;
+			font-weight: 500;
+			margin-left: 20px;
+			font-family: 'Crete Round', serif;
+		}
+
+		.module-card h2.module-title a:hover {
+			color: rgb(100, 100, 218);
+		}
+
+		.module-card p.module-desc {
+			margin-left: 20px;
+			font-size: 16px;
+			color: rgb(128, 126, 126);
+		}
+  </style>
+
+  <div class="container pl-5 pt-5">
+    
+    <h5 class="mt-2 mb-4" style="font-size: 16px; color: rgb(146, 146, 142);">COURSE MODULES</h5>
+
+    {% for module in course.modules.all %}
+		<div class="card module-card mb-3">
+			<div class="card-body">
+				<div style="float: left; width: 70%;">
+          <h2 class="module-title">
+            <a href="{% url 'classroom_module_contents' course.slug module.slug %}">
+              {{ module.title }}
+            </a>
+          </h2>
+          <p class="module-desc">
+            {{ module.summary|truncatewords:45 }}
+          </p>
+          <div class="ml-4">
+            {% if module|already_view:request.user.student_profile %}
+              <p class="text-success">Completed</p>
+            {% else %}
+              <a href="" class="btn btn-outline-info">Start <i class="fas fa-long-arrow-alt-right"></i></a>
+            {% endif %}
+          </div>
+        </div>
+        <div style="float: right;width: 20%;">
+          <img src="{% static 'files/utility_images/pic.png' %}" width="200px" alt="">
+        </div>
+			</div>
+		</div>
+    {% endfor %}
+
+  </div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "cms_base.html" %}
+
+{% block title %}Quizzes{% endblock %}
+
+{% block content %}
+
+	<div class="modal fade" tabindex="-1" role="dialog" id="modal">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content"></div>
+		</div>
+	</div>
+
+	<div style="width: 100%;">
+		<div class="ml-2 mt-3" style="float:left; width: 65%;">
+			<h4 class="ml-3" style="font-weight: bold;">Recent Courses</h4>
+				{% for quiz in quizzes %}
+					<div class="card mt-4">
+						<div class="card-body">
+							<div class="row">
+								<div class="col col-md-8">
+									<h5 class="course-title">
+										<a href="{% url 'quiz_cms_details' quiz.id %}">
+											{{ quiz.title }}
+										</a>
+									</h5>
+									<small class="course-description">{{ quiz.date_created }}</small>
+								</div>
+							</div>
+						</div>
+					</div>
+				{% empty %}
+					<div class="card mt-5">
+						<div class="card-body text-secondary text-center">
+							You haven't created any quizzes yet. <br>
+							Add new quiz to your course..
+						</div>
+					</div>
+				{% endfor %}
+		</div>
+		<div style="float:left; width: 27%; margin-top: 27px;margin-left: 29px;">
+			<button id="quiz_create_btn" class="btn btn-outline-success">
+				Create new quiz 
+				<i class="fas fa-plus"></i>
+			</button>
+			<div class="card mt-3">
+					<div class="card-body">
+						<h6>All Courses</h6>
+						<ul class="list-group">
+							{% for course in courses %}
+							<li class="list-group-item">
+								<a
+									class="{% if course == current_course %} text-secondary {% endif %}" 
+									href="{% url 'quizzes_by_specific_course' course.slug %}" 
+									style="font-size: 14px;">
+									{{ course.title }}
+								</a>
+							</li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>
+		</div>
+	</div>
+
+{% endblock %}
+
+{% block javascript %}
+	<script type="text/javascript">
+		$('#quiz_create_btn').modalForm({
+        formURL: "{% url 'create_quiz' current_course.slug %}"
+      });
+	</script>
+{% endblock %}
+

@@ -1,0 +1,40 @@
+{% extends "cms_base.html" %}
+
+{% block title %}
+  {% if object %}
+    Update Course "{{ object.title }}"
+  {% else %}
+    Create New Course 
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <h3 class="p-3" style="font-weight: bold;">
+    {% if object %}
+      Update Course "{{ object.title }}"
+    {% else %}
+      Create New Course 
+    {% endif %}
+  </h3>
+  <hr>
+  <form action="" method="post" enctype="multipart/form-data" class="ml-5 w-75">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>
+      <input type="submit" value="{% if object %}Save changes{% else %}Create{% endif %}" class="btn btn-primary">
+    </p>  
+  </form>
+
+  <script type="text/javascript">
+    document.querySelectorAll('input').forEach(input => {
+      if(input.type === "text" || input.type === "number") {
+        input.className = 'form-control'
+      }
+    });
+    document.querySelector('textarea').className = 'form-control';
+    
+    document.querySelectorAll('select').forEach(select => {
+      select.className = 'form-control'
+    })
+  </script>
+{% endblock %}

@@ -1,0 +1,232 @@
+{% extends "cms_base.html" %}
+{% load courses %}
+
+{% block title %}
+  Module contents
+{% endblock %}
+
+{% block content %}
+  <style>
+    .message {
+      display: none;
+    }
+    .content-list {
+      float: left;
+      width: 65%;
+      margin-left: 20px;
+    }
+
+    .content-date {
+      position: absolute;
+      right: 20px;
+      font-size: 15.5px;
+    }
+
+    .modules-list {
+      float: right;
+      width: 29%;
+      margin-right: 20px;
+      margin-top: 50px;
+    }
+
+    #summary {
+      font-family: 'Alegreya Sans', sans-serif;
+      padding: 20px;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      font-size: 18px;
+    }
+
+    .content-btns {
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+  </style>
+
+  <p class="message bg-success text-white p-3"></p>
+
+  <div class="content-list">
+    <h1 class="p-2" style="font-family: 'Crete Round', serif;">
+      {{ module.title }}
+    </h1>
+    <h3 class="p-2 mt-3" style="font-family: 'Crete Round', serif;">
+      Summary:
+    </h3>
+    <p id="summary">
+      {{ module.summary }}
+    </p>
+    <h2 style="font-family: 'Crete Round', serif;">Contents Belonging to the Module</h2>
+    <hr>
+
+    <div class="mb-3 ml-3">
+      <button class="btn btn-sm btn-danger content-btns" id="new_text_btn">
+        <i class="far fa-file-alt"></i>
+        Text 
+      </button>
+      <button class="btn btn-sm btn-success content-btns" id="new_video_btn">
+        <i class="fas fa-video"></i>
+        Video
+      </button>
+      <button class="btn btn-sm btn-dark content-btns" id="new_image_btn">
+        <i class="fas fa-image"></i>
+        Image
+      </button>
+      <button class="btn btn-sm btn-primary content-btns" id="new_file_btn">
+        <i class="far fa-file"></i>
+        File
+      </button>
+    </div>
+
+    <ul class="list-group contents">
+    {% for content in contents %}
+      <li class="list-group-item mb-2" data-id="{{ content.id }}" id="content-{{ content.id }}">
+        <h4 class="content-show text-secondary" style="cursor: pointer;font-family: 'Crete Round', serif;">
+          <i class="far fa-file text-warning"></i>
+          &emsp14; {{ content.content_object.title }}
+          <span class="content-date" style="color: #98989;">{{ content.content_object.date_created.date }}</span>
+        </h4>
+        <div class="content-box" style="display: none;">
+          <div class="row">
+            <div class="col">
+              <span class="order" style="display: none;">
+                {{ content.order|add:1 }}
+              </span> 
+              by <small>{{ content.content_object.owner}} on {{ content.content_object.date_created }}</small>
+              {% with content_model=content.content_type.model %}
+              <div class="col">
+                <a href="{% url 'content_update' module.slug content_model content.content_object.id %}" class="btn btn-sm btn-primary">Edit</a>
+                <button id="content-delete-btn" data-module_slug="{{ module.slug }}" data-model_name="{{ content_model }}" data-content_id="{{ content.id }}" class="btn btn-sm btn-danger">Delete</button>
+              </div>
+              {% endwith %}
+            </div>
+        </div>
+        <hr>
+        <p>
+          {% if content.content_object.text %}
+            {{ content.content_object.text|markdown_content|safe }}
+          {% elif content.content_object.image %}
+            <img src="{{ content.content_object.image.url }}" class="img-thumbnail" alt="">
+          {% elif content.content_object.file %}
+            <a href="{{ content.content_object.file.url }}">{{ content.content_object }}</a>
+          {% else %}
+            <div class="ratio ratio-16x9">
+              <video width='650' height= '360' controls>
+                <source src="{{ content.content_object.video.url }}">
+              </video>
+            </div>
+          {% endif %}
+        </p>
+        </div>
+      </li>
+    {% empty %}
+      <p class="text-center border mt-3 p-3" style="font-size: 20px; color: rgb(177, 176, 176);">No contents for the module yet.</p>
+    {% endfor %}
+    </ul>
+  </div>
+
+  <div class="modules-list">
+    <div class="card">
+      <div class="card-body" style="box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;">
+        <h3 style="font-family: 'Crete Round', serif;">Modules List</h3>
+        <ul class="list-group">
+          {% for module in modules_list %}
+            <li class="list-group-item mb-1">
+              <a href="{{ module.get_absolute_url }}">
+                {{ module.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="clearfix"></div>
+  <div style="height: 100px;"></div>
+
+{% endblock %}
+
+{% block javascript %}
+  
+  <script type="text/javascript">
+    document.querySelectorAll('.content-show').forEach((item) => item.addEventListener('click', function(e) {
+        var content_body = e.target.nextSibling.nextSibling;
+        if (content_body.style.display == 'none'){
+          content_body.style.display = 'block';
+        } else {
+          content_body.style.display = 'none';
+        }
+    }));
+  </script>
+
+  <script type="text/javascript">
+
+    $("#new_text_btn").modalForm({
+      formURL: "{% url 'content_create' module.slug 'text' %}"
+    });
+
+    $("#new_video_btn").modalForm({
+      formURL: "{% url 'content_create' module.slug 'video' %}"
+    });
+
+    $("#new_image_btn").modalForm({
+      formURL: "{% url 'content_create' module.slug 'image' %}"
+    });
+
+    $("#new_file_btn").modalForm({
+      formURL: "{% url 'content_create' module.slug 'file' %}"
+    });
+
+
+    // executes, when the dom is ready
+    $(document).ready(function() {
+      $('.contents').sortable({
+        stop: function (event, ui) {
+          contents_order = {};
+          $('.contents').children().each(function () {
+            // update the order
+            $(this).find('.order').text($(this).index()+1);
+            // associate the content with its order
+            contents_order[$(this).data('id')] = $(this).index();
+          });
+          $.ajax({
+            type: 'POST',
+            url: '{% url "order_content" %}',
+            contentType: 'application/json; charset-utf-8',
+            dataType: 'json',
+            data: JSON.stringify(contents_order)
+          });
+        }
+      });
+    });
+
+    document.querySelectorAll('#content-delete-btn').forEach((button) => button.addEventListener('click', deleteContent));
+    
+    function deleteContent(e){
+      const content_id  = this.dataset.content_id;
+      const model_name  = this.dataset.model_name;
+      const module_slug = this.dataset.module_slug;
+
+      $.ajax({
+        url: `/course/module/${module_slug}/content/${model_name}/${content_id}/delete/`, 
+        success: function (response){
+          document.querySelector(`#content-${content_id}`).remove();
+          const message_box = document.querySelector('.message');
+          message_box.textContent = response['message'];
+          message_box.style.display = "block";
+
+          // remove message after 4 seconds
+          setTimeout(function () {
+            message_box.remove();
+          }, 4000)
+        },
+        error: function(response){
+          alert(response['message']);
+        }
+      });
+    }
+
+    $(document).ready(function() {
+      $(".dropdown-toggle").show();
+    })
+
+  </script>
+{% endblock %}

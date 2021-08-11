@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Certificate</title>
+  <style>
+    @page {
+      size: letter landscape;
+      margin: 2cm;
+    }
+
+    body {
+      text-align: center;
+      color: rgb(31, 36, 92);
+    }
+    h1.title {
+      font-size: 40px;
+    }
+    h1.student-name {
+      font-size: 30px;
+    }
+    p {
+      font-size: 14.5px;
+      font-family:'Courier New', Courier, monospace;
+    }
+
+    div.signature {
+      width: 50px;
+      margin: auto;
+    }
+
+    div.signature img {
+      margin-bottom: -25px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center;">
+    <img src="http://127.0.0.1:8000/static/files/utility_images/logo.png" width="200px" alt=""> <br>
+  </h1>
+  <h1 class="title">
+    CERITIFICATE OF COMPLETION
+  </h1>
+  
+  <p>This certifies that</p>
+
+  <h1 class="student-name">
+    {{ student.user.full_name }}
+  </h1>
+
+  <p>has completed <b>{{ course.title }}</b> Course from EDUBIN at {{ today.date }}</p>
+  <p>
+    We found him/her sincere, hardworking, dedicated and result oriented. <br>
+    He/She worked well as part of the team during his/her tenure. <br>
+    We take this opportunity to thank him/her and wish him/her all the best for his/her future.
+  </p>
+
+  <p>Awarded this [{{ today.date }}]</p>
+
+  <br>
+  <div class="signature">
+    <img src="http://127.0.0.1:8000/static/files/utility_images/signature.png" width="200px" alt="">
+  </div>
+  <p>
+    <b>Adil Saleem</b><br>
+    Chairman /+923160917149
+  </p>
+</body>
+</html>

@@ -1,0 +1,119 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.1/css/all.css" integrity="sha384-vp86vTRFVJgpjF9jiIGPEEqYqlDwgyBgEF109VFjmqGmIY/Y4HV4d3Gp2irVfcrp" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  
+  <link rel="shortcut icon" href="{% static 'files/utility_images/favicon.png' %}" type="image/png">
+  <link rel="stylesheet" href="{% static 'css/slick.css' %}">
+  <link rel="stylesheet" href="{% static 'css/animate.css' %}">  
+  <link rel="stylesheet" href="{% static 'css/nice-select.css' %}">  
+  <link rel="stylesheet" href="{% static 'css/jquery.nice-number.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/magnific-popup.css' %}">
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/font-awesome.min.css' %}">
+  <link rel="stylesheet" href="{% static 'css/default.css' %}">  
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">  
+  <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+
+  <script type="text/javascript">
+    
+    var user = "{{ request.user }}";
+
+    if (user == "AnonymousUser") {
+
+      function setCookie(name, value, days) {
+        var date_creation = new Date();
+        date_creation.setTime(date_creation.getTime() + (days*60*1000));
+        var expires = "expires=" + date_creation.toUTCString();
+        document.cookie = name + "=" + JSON.stringify(value) + ";" + expires + ";domain=;path=/";
+        location.reload();
+      }
+
+      function getCookie(name) {
+        var cookieArray = document.cookie.split(';');
+        for(var i = 0; i < cookieArray.length; i++) {
+          var cookiePair = cookieArray[i].split('=');
+
+          if(name == cookiePair[0].trim()) {
+            return decodeURIComponent(cookiePair[1]);
+          }
+        }
+        return null;
+      }
+
+      var cart = JSON.parse(getCookie('cart'));
+      if (cart == undefined) {
+        cart = {};
+        setCookie('cart', cart, 2);
+      }
+    }
+  </script>
+
+  <title>
+    {% block title %} {% endblock %}
+  </title>
+</head>
+<body>
+
+  <!--====== PRELOADER PART START ======-->
+    
+    <div class="preloader">
+        <div class="loader rubix-cube">
+            <div class="layer layer-1"></div>
+            <div class="layer layer-2"></div>
+            <div class="layer layer-3 color-1"></div>
+            <div class="layer layer-4"></div>
+            <div class="layer layer-5"></div>
+            <div class="layer layer-6"></div>
+            <div class="layer layer-7"></div>
+            <div class="layer layer-8"></div>
+        </div>
+    </div>
+    
+    <!--====== PRELOADER PART START ======-->
+
+  {% include "navbar.html" %}
+  
+  {% block carousel %}
+
+  {% endblock %}
+
+  <div style="width: 100%;">
+    {% block content %}
+
+    {% endblock %}
+  </div>
+
+  {% include "footer.html" %}
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.9.1/axios.js'></script>
+  {% block javascript %}
+
+  {% endblock %}
+
+  <script src="{% static 'js/vendor/modernizr-3.6.0.min.js' %}"></script>
+  <script src="{% static 'js/vendor/jquery-1.12.4.min.js' %}"></script>
+  <script src="{% static 'js/bootstrap.min.js' %}"></script>  
+  <script src="{% static 'js/slick.min.js' %}"></script>  
+  <script src="{% static 'js/jquery.magnific-popup.min.js' %}"></script>  
+  <script src="{% static 'js/waypoints.min.js' %}"></script>
+  <script src="{% static 'js/jquery.counterup.min.js' %}"></script>  
+  <script src="{% static 'js/jquery.nice-select.min.js' %}"></script>  
+  <script src="{% static 'js/jquery.nice-number.min.js' %}"></script>
+  <script src="{% static 'js/jquery.countdown.min.js' %}"></script>  
+  <script src="{% static 'js/validator.min.js' %}"></script>  
+  <script src="{% static 'js/ajax-contact.js' %}"></script>  
+  <script src="{% static 'js/main.js' %}"></script>  
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDC3Ip9iVC0nIxC6V14CKLQ1HZNF_65qEQ"></script>
+  <script src="{% static 'js/map-script.js' %}"></script>
+</body>
+</html>

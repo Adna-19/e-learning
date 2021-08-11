@@ -1,0 +1,119 @@
+{% extends "cms_base.html" %}
+
+{% block title %}
+  Course Modules
+{% endblock %}
+
+{% block content %}
+  <style type="text/css">
+    #published-date {
+      font-size: 19px;
+      font-family: 'Crete Round', serif;
+      margin-left: 10px;
+      color: #6D6D6D;
+    }
+
+    #description {
+      font-family: 'Alegreya Sans', sans-serif;
+      padding: 20px;
+      box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+      font-size: 18px;
+    }
+
+    .module-operation-btns {
+      position: absolute;
+      right: 10px;
+    }
+  </style>
+
+  <div class="p-3">
+    <h1 class="p-2" style="font-family: 'Crete Round', serif;">
+      {{ course.title }}
+    </h1>
+    <div id="published-date">
+      <small>By {{ course.instructor.user.full_name }}</small>
+      <small>On {{ course.date_created }}</small>
+    </div>
+
+    <h3 class="p-2 mt-3" style="font-family: 'Crete Round', serif;">Description:</h3>
+    <p id="description">{{ course.description }}</p>
+    <hr>
+
+    <div class="row mt-3">
+      <div class="col">
+        <h3 style="font-family: 'Crete Round', serif;">Course Modules ({{ course.modules.count }})</h3>
+      </div>
+      <div class="col-md-2">
+        <button id="new_module_btn" class="btn btn-success">Add Module <i class="fas fa-plus"></i></button>
+      </div>
+    </div>
+
+    <ul class="list-group mt-4 modules">
+      {% for module in modules %}
+        <li class="list-group-item" data-id="{{ module.id }}" style="font-size: 21px;">
+          <strong class="order">{{ module.order|add:1 }}</strong>. &emsp14;{{ module.title }}
+          <span class="module-operation-btns">
+            <button id="delete-module-btn" class="btn btn-sm btn-danger" data-slug="{{ module.slug }}">
+              <i class="fas fa-trash"></i>
+            </button>
+            <a href="{% url 'content_list' module.slug %}" class="btn btn-sm btn-primary">Manage contents</a>
+          </span>
+        </li>
+      {% empty %}
+        <p class="text-center border mt-3 p-3" style="font-size: 35px; height: 100px; color: rgb(177, 176, 176);">No modules for the course yet.</p>
+      {% endfor %}
+    </ul>
+
+  </div>
+
+  <div style="height: 100px;">
+    
+  </div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script>
+    $("#new_module_btn").modalForm({
+      formURL: "{% url 'manage_course_modules' course.slug %}"
+    });
+
+    // executes, when the dom is ready
+    $(document).ready(function() {
+      $('.modules').sortable({
+        stop: function (event, ui) {
+          modules_order = {};
+          $('.modules').children().each(function () {
+            // update the order
+            $(this).find('.order').text($(this).index()+1);
+            // associate the module with its order
+            modules_order[$(this).data('id')] = $(this).index();
+          });
+          $.ajax({
+            type: 'POST',
+            url: '{% url "order_module" %}',
+            contentType: 'application/json; charset-utf-8',
+            dataType: 'json',
+            data: JSON.stringify(modules_order)
+          });
+        }
+      });
+    });
+
+    document.querySelectorAll('#delete-module-btn').forEach((button) => button.addEventListener('click', deleteModule))
+
+    function deleteModule(e) {
+      const module_slug = this.dataset.slug;
+      $.ajax({
+        url: `/course/${module_slug}/delete-module/`,
+        success: function (response) {
+          let message = response['message'];
+          e.target.parentElement.parentElement.remove();
+        },
+        error: function (response) {
+          alert('Something went wrong.');
+        }
+      });
+    }
+  </script>
+{% endblock %}

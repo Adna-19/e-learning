@@ -1,0 +1,180 @@
+{% extends "classroom_base.html" %}
+{% load courses %}
+
+{% block title %} Dashboard {% endblock %}
+
+{% block content %}
+
+	<style>
+		.course-card {
+			width: 94%;
+			box-shadow: rgba(67, 71, 85, 0.27) 0px 0px 0.25em, rgba(90, 125, 188, 0.05) 0px 0.25em 1em;
+		}
+
+		.course-card p.course-status i {
+			font-size: 18px;
+		}
+
+		.course-card h2.course-title a {
+			color: rgb(79, 75, 75);
+			text-decoration: none;
+			font-size: 26px;
+			font-weight: 500;
+			margin-left: 20px;
+			font-family: 'Crete Round', serif;
+		}
+
+		.course-card h2.course-title a:hover {
+			color: rgb(100, 100, 218);
+		}
+
+		.course-card p.course-desc {
+			margin-left: 20px;
+			font-size: 16px;
+			color: rgb(128, 126, 126);
+		}
+	</style>
+
+	<div class="container pl-5 pt-5">
+
+		<h5 class="mt-2 mb-4" style="font-size: 16px; color: rgb(146, 146, 142);">LATEST ACTIVITY</h5>
+
+		{% if latest_activity %}
+			{% for latest_course in latest_activity %}
+				<div class="card course-card mb-3">
+					<div class="card-body">
+						<p class="course-status">
+							<i class="fas fa-shapes text-primary"></i> &emsp14;
+							<span style="text-transform: uppercase;">{{ latest_course.payment_status }}</span> COURSE
+						</p>
+						<h2 class="course-title">
+							<a href="{% url 'classroom_course_details' latest_course.slug %}">
+								{{ latest_course.title }}
+							</a>
+						</h2>
+						<p class="course-desc">
+							{{ latest_course.description|truncatewords:45 }}
+						</p>
+						<div class="ml-4">
+							{% if latest_course|in_progess:request.user.student_profile %}
+								<a href="" class="btn btn-primary">Continue <i class="fas fa-long-arrow-alt-right"></i></a>
+							{% else %}
+								<a href="" class="btn btn-success">Start learning <i class="fas fa-long-arrow-alt-right"></i></a>
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			{% endfor %}
+		{% else %}
+			<div class="card course-card">
+				<div class="card-body">
+					<p class="text-center mt-2" style="font-size: 27px; color: rgb(196, 196, 192);">
+						 No Latest Activity yet...
+					</p>
+				</div>
+			</div>
+		{% endif %}
+
+		<h5 class="mt-5 mb-4" style="font-size: 16px; color: rgb(146, 146, 142);">
+			CURRENT FREE COURSE ENROLLMENTS
+		</h5>
+
+		{% for course in free_courses %}
+			<div class="card course-card mb-3">
+				<div class="card-body">
+					<div style="float: left; width: 70%;">
+						<p class="course-status">
+							<i class="fas fa-shapes text-primary"></i> &emsp14;
+							<span style="text-transform: uppercase;">{{ course.payment_status }}</span> COURSE
+						</p>
+						<h2 class="course-title">
+							<a href="{% url 'classroom_course_details' course.slug %}">
+								{{ course.title }}
+							</a>
+						</h2>
+						<p class="course-desc">
+							{{ course.description|truncatewords:25 }}
+						</p>
+					</div>
+
+					<div style="float: right; width: 20%;" class="ml-4 pt-5">
+						<a href="" class="btn btn-outline-primary">Program Home <i class="fas fa-long-arrow-alt-right"></i></a>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+
+		<h5 class="mt-5 mb-4" style="font-size: 16px; color: rgb(146, 146, 142);">
+			CURRENT PAID COURSE ENROLLMENTS
+		</h5>
+
+		{% for course in paid_courses %}
+			<div class="card course-card mb-3">
+				<div class="card-body">
+					<div style="float: left; width: 70%;">
+						<p class="course-status">
+							<i class="fas fa-shapes text-primary"></i> &emsp14;
+							<span style="text-transform: uppercase;">{{ course.payment_status }}</span> COURSE
+						</p>
+						<h2 class="course-title">
+							<a href="{% url 'classroom_course_details' course.slug %}">
+								{{ course.title }}
+							</a>
+						</h2>
+						<p class="course-desc">
+							{{ course.description|truncatewords:25 }}
+						</p>
+					</div>
+
+					<div style="float: right; width: 20%;" class="ml-4 pt-5">
+						<a href="" class="btn btn-outline-primary">Program Home <i class="fas fa-long-arrow-alt-right"></i></a>
+					</div>
+				</div>
+			</div>
+		{% empty %}
+			<div class="card course-card">
+				<div class="card-body">
+					<p class="text-center mt-2" style="font-size: 27px; color: rgb(196, 196, 192);">You have no paid courses yet.</p>
+				</div>
+			</div>
+		{% endfor %}
+
+
+		<h5 class="mt-5 mb-4" style="font-size: 16px; color: rgb(146, 146, 142);">
+			THE COURSES YOU HAVE COMPLETED
+		</h5>
+
+		{% for course in completed_courses %}
+			<div class="card course-card mb-3">
+				<div class="card-body">
+					<div style="float: left; width: 70%;">
+						<p class="course-status">
+							<i class="fas fa-medal text-success"></i> &emsp14;
+							<span style="text-transform: uppercase;" class="text-success">COMPLETED</span>
+						</p>
+						<h2 class="course-title">
+							<a href="{% url 'classroom_course_details' course.slug %}">
+								{{ course.title }}
+							</a>
+						</h2>
+						<p class="course-desc">
+							{{ course.description|truncatewords:25 }}
+						</p>
+					</div>
+
+					<div style="float: right; width: 20%;" class="ml-4 pt-5">
+						<a href="" class="btn btn-outline-primary">Show Course <i class="fas fa-long-arrow-alt-right"></i></a>
+					</div>
+				</div>
+			</div>
+		{% endfor %}
+		
+		<a href="" class="btn btn-outline-info btn-block mb-4 mx-auto" style="width: 44%;">
+			Acheivements
+		</a>
+
+	</div>
+
+	
+	
+{% endblock %}

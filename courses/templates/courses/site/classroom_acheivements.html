@@ -1,0 +1,139 @@
+{% extends "classroom_base.html" %}
+{% load static %}
+{% load courses %}
+
+{% block title %} Acheivements {% endblock %}
+
+{% block classroom_navbar %}
+  <h5>Acheivements</h5>
+{% endblock %}
+
+{% block content %}
+    <style>
+        .card-container {
+            background-color: #fff;
+            position: relative;
+            display: grid;
+            grid-template-columns: 300px 600px;
+            border-radius: 5px;
+            box-shadow: 0 15px 20px rgba(0, 0, 0, 0.356);
+        }
+        .card-container img {
+            width: 380px;
+            height: 270px;
+            border-radius: 5px 0 0 5px;
+        }
+        .card-container .btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            border: none;
+            height: 20px;
+            outline: none;
+            display: flex;
+            align-items: center;
+            background-color: #fc9400;
+            color: #fff;
+            padding: 22px 45px;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.294);
+        }
+        .card-container .btn i {
+            margin-left: 20px;
+            font-size: 1.5rem;
+        }
+
+        .container__text {
+            margin-left: 50px;
+            padding: 40px 40px 0;
+        }
+        .container__text h1 {
+            color: #351897;
+            font-size: 25px;
+            font-weight: 400;
+        }
+        .container__text .container__text__star span {
+            font-size: 0.8rem;
+            color: #bbb8b8;
+            margin: -5px 0 20px;
+        }
+
+        .container__text .container__text__star span.checked {
+            color: #fc9400;
+        }
+
+        .container__text p {
+            font-size: 0.9rem;
+        }
+        .container__text .container__text__timing {
+            display: flex;
+            margin: 20px 0 10px;
+        }
+        .container__text .container__text__timing .container__text__timing_time {
+            margin-right: 40px;
+        }
+        .container__text .container__text__timing h2 {
+            margin-bottom: 5px;
+            font-size: 1rem;
+            font-weight: 400;
+            color: #818189;
+        }
+        .container__text .container__text__timing p {
+            color: #351897;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+    </style>
+
+    <div class="container pl-3 pt-5">
+        {% for achievement in achievements %}
+            <div class="card-container mb-3">
+                <img
+                src="{{ achievement.course.image.url }}"
+                alt=""
+                />
+                <div class="container__text">
+                    <h1>
+                        <a href="">
+                            <i class="fas fa-medal text-success"></i> &emsp14; {{ achievement.course.title }}
+                        </a>
+                    </h1>
+                    <div class="container__text__star">
+                        {% for r in 5|times %}
+                            <span 
+                                class="fa fa-star
+                                {% if r <= achievement.course.get_current_rating %}
+                                    checked
+                                {% endif %}"
+                            >
+                            </span>
+                        {% endfor %}
+                    </div>
+                    <p>
+                        {{ achievement.course.description|truncatewords:20 }}
+                    </p>
+                    <div class="container__text__timing">
+                        <div class="container__text__timing_time">
+                            <h2>Modules</h2>
+                            <p>{{ achievement.course.modules.count }}</p>
+                        </div>
+                        <div class="container__text__timing_time">
+                            <h2>Total Time</h2>
+                            <p>40 Hrs</p>
+                        </div>
+                        <div class="container__text__timing_time">
+                            <h2>Quizzes</h2>
+                            <p>{{ achievement.course.quizzes.count }}</p>
+                        </div>
+                    </div>
+                    <a class="btn" href="{{ achievement.certificate.url }}">
+                        Download Certificate <i class="fa fa-arrow-down"></i>
+                    </a>
+                </div>
+           </div>
+        {% endfor %}
+    </div>
+{% endblock %}
